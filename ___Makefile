@@ -1,0 +1,40 @@
+CC = clang
+CFLAGS = -std=c11 -Wall -Wextra -Werror -g3 -fsanitize=address
+INCS = -I./inc 
+LIBS_SERVER =  -I./libraries/sqlite3/inc/ -L./libraries/sqlite3/ -lsqlite3
+LIBS_CLIENT = -lncurses
+
+SRC=src
+
+BIN_CLIENT = uchat
+BIN_SERVER = uchat_server
+
+CFILES_CLIENT = $(wildcard src/client/*.c) $(wildcard src/lib/*.c)
+CFILES_SERVER = $(wildcard src/server/*.c) $(wildcard src/server/*/*.c) $(wildcard src/lib/*.c)
+OBJ_DIR = obj
+
+all: ${BIN_CLIENT} ${BIN_SERVER}
+
+sqlite3:
+	@make -sC libraries/sqlite3
+
+
+${BIN_CLIENT}:
+	@mkdir -p ${OBJ_DIR}
+	@${CC} ${CFLAGS} ${INCS} ${LIBS_CLIENT} ${CFILES_CLIENT} -o ${BIN_CLIENT}
+
+
+${BIN_SERVER}: sqlite3
+	@mkdir -p ${OBJ_DIR}
+	@${CC} ${CFLAGS} ${INCS} ${LIBS_SERVER} ${CFILES_SERVER} -o ${BIN_SERVER}
+
+
+uninstall:
+	@rm -rf ${BIN_SERVER} ${BIN_CLIENT}
+	@make uninstall -sC libraries/sqlite3
+
+clean:
+	@rm -rf ${OBJ_DIR}
+	@make clean -sC libraries/sqlite3
+
+reinstall: all
